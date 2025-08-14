@@ -64,6 +64,6 @@ This script demonstrates particle reflection inside a cylindrical boundary using
 - Not yet merged into upstream LAMMPS (standalone feature branch).
 
 ## ToDo
-- [ ] Add example script and visualization
+- [x] Add example script and visualization
 - [ ] Add test to verify reflection behavior
 - [ ] Benchmark performance impact for large system
