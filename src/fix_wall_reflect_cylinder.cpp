@@ -53,7 +53,7 @@ FixWallReflectCylinder::FixWallReflectCylinder(LAMMPS *lmp, int narg, char **arg
   R = utils::numeric(FLERR,arg[iarg],false,lmp);
   yc = utils::numeric(FLERR,arg[iarg+1],false,lmp);
   zc = utils::numeric(FLERR,arg[iarg+2],false,lmp);
-  std::cout << "R: " << R << " yc: " << yc << " zc: " << zc << std::endl;
+  //std::cout << "R: " << R << " yc: " << yc << " zc: " << zc << std::endl;
 
   //while (iarg < narg) {
     //if ((strcmp(arg[iarg],"xlo") == 0) || (strcmp(arg[iarg],"xhi") == 0) ||
@@ -233,41 +233,29 @@ void FixWallReflectCylinder::wall_particle(double R, double yc, double zc)
 
   double **x = atom->x;
   double **v = atom->v;
+  double **vest = atom->vest; //vest is needed for DPD 
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
   
   double R_2 = R*R;
   double dy, dz, w;
-  //dim = which / 2; //num of side -> dim: (0,1) -> 0; (2,3) -> 1; (4,5) -> 2 
-  //side = which % 2; //front or back
 
   for (i = 0; i < nlocal; i++) { //nlocal is the number of atoms of this processor
     //setmask() sets on bits POST_INTEGRATE and POST_INTEGRATE_RESPA
     //checks if mask and groupbit are the same -> if they are, then the atom is in the group specified by the fix
     if (mask[i] & groupbit) { 
-        dy = x[i][1] - yc;
+        dy = x[i][1] - yc; 
         dz = x[i][2] - zc;
-        //std::cout << dy*dy + dz*dz << " R^2 " <<  R_2 << std::endl;
         if (dy*dy + dz*dz > R_2) {
-          //x[i][dim] = coord + (coord - x[i][dim]);
-
-          //std::cout << "i " << i << " before: " << "x: " << x[i][0] << " y: " << x[i][1] << " z: " << x[i][2] << std::endl;
-          
-          w = 2*(1-R/sqrt(dy*dy + dz*dz));
+          w = 2*(1-R/sqrt(dy*dy + dz*dz)); //calculate projection
           x[i][1] -= w*dy;
           x[i][2] -= w*dz;
-          //std::cout << "i " << i << " after: " << "x: " << x[i][0] << " y: " << x[i][1] << " z: " << x[i][2] << std::endl;
 
           for (dim=0; dim<3; dim++) {
               v[i][dim] = -v[i][dim];
+              vest[i][dim] = -vest[i][dim];
           }
         }
-      //} else {
-      //  if (x[i][dim] > coord) {
-      //    x[i][dim] = coord - (x[i][dim] - coord);
-      //    v[i][dim] = -v[i][dim];
-      //  }
-      //}
     }
   }
 }
